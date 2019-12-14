@@ -21,7 +21,7 @@ class App extends Component {
   pollutions = ["pm25", "pm10", "so2", "no2", "o3", "co", "bc"];
 
   handleDataFetch = () => {
-    const apiOpenaq = `https://api.openaq.org/v1/measurements?country=${this.state.nationality}&limit=20&parameter=${this.state.pollution}`;
+    const apiOpenaq = `https://api.openaq.org/v1/measurements?country=${this.state.nationality}&limit=1000&parameter=${this.state.pollution}`;
     fetch(apiOpenaq)
       .then(response => {
         if (response.ok) {
@@ -31,12 +31,23 @@ class App extends Component {
       })
       .then(response => response.json())
       .then(data => {
+        this.dataSort(data);
+        data = data.results.filter(
+          (results, index, self) => index === self.findIndex(t => t.city === results.city)
+        );
+        data = data.slice(0, 10);
         console.log(data);
         this.setState({
-          measurements: data.results
+          measurements: data
         });
       })
       .catch(error => console.log(error, "Błąd"));
+  };
+
+  dataSort = data => {
+    data.results.sort((a, b) => {
+      return b.value - a.value;
+    });
   };
 
   handleChange = e => {
